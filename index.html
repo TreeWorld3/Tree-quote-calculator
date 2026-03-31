@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>DMP Tree Quote Tool</title>
+
+<style>
+body {
+  font-family: Arial;
+  max-width: 600px;
+  margin: auto;
+  padding: 20px;
+  background: #eef2f3;
+}
+
+h2 {
+  text-align: center;
+}
+
+input, select, button {
+  width: 100%;
+  padding: 10px;
+  margin: 6px 0;
+}
+
+.result {
+  background: white;
+  padding: 15px;
+  margin-top: 15px;
+  border-radius: 10px;
+}
+
+button {
+  background: #2e7d32;
+  color: white;
+  border: none;
+  cursor: pointer;
+}
+
+button:hover {
+  background: #1b5e20;
+}
+</style>
+</head>
+
+<body>
+
+<h2>🌳 DMP Tree Quote Tool</h2>
+
+<label>Customer Name</label>
+<input type="text" id="customer">
+
+<label>Tree Height (m)</label>
+<input type="number" id="height">
+
+<label>Access Difficulty</label>
+<select id="access">
+  <option value="1">Easy</option>
+  <option value="1.5">Medium</option>
+  <option value="2">Difficult</option>
+</select>
+
+<label>Hours Required</label>
+<input type="number" id="hours">
+
+<label>Climber Day Rate (£)</label>
+<input type="number" id="climberRate" value="250">
+
+<label>Ground Worker Rate (£)</label>
+<input type="number" id="groundRate" value="150">
+
+<label>Number of Ground Workers</label>
+<input type="number" id="groundWorkers" value="1">
+
+<label>Waste Removal (£)</label>
+<input type="number" id="waste" value="0">
+
+<label>Profit %</label>
+<input type="number" id="profitPercent" value="20">
+
+<button onclick="calculate()">Calculate Quote</button>
+<button onclick="saveJob()">Save Job</button>
+
+<div class="result" id="result"></div>
+
+<h3>📂 Saved Jobs</h3>
+<div id="jobs"></div>
+
+<script>
+function calculate() {
+  let customer = document.getElementById("customer").value;
+  let height = parseFloat(document.getElementById("height").value);
+  let access = parseFloat(document.getElementById("access").value);
+  let hours = parseFloat(document.getElementById("hours").value);
+
+  let climberRate = parseFloat(document.getElementById("climberRate").value);
+  let groundRate = parseFloat(document.getElementById("groundRate").value);
+  let groundWorkers = parseFloat(document.getElementById("groundWorkers").value);
+
+  let waste = parseFloat(document.getElementById("waste").value);
+  let profitPercent = parseFloat(document.getElementById("profitPercent").value);
+
+  let labour = (climberRate * (hours / 8)) + (groundRate * groundWorkers * (hours / 8));
+
+  let heightFactor = 1 + (height / 20);
+  let subtotal = labour * heightFactor * access + waste;
+
+  let profit = subtotal * (profitPercent / 100);
+  let total = subtotal + profit;
+
+  document.getElementById("result").innerHTML =
+    "<strong>Customer:</strong> " + customer + "<br>" +
+    "<strong>Labour Cost:</strong> £" + labour.toFixed(2) + "<br>" +
+    "<strong>Subtotal:</strong> £" + subtotal.toFixed(2) + "<br>" +
+    "<strong>Profit:</strong> £" + profit.toFixed(2) + "<br>" +
+    "<strong>Final Quote:</strong> £" + total.toFixed(2);
+}
+
+function saveJob() {
+  let job = document.getElementById("result").innerHTML;
+  if (!job) return;
+
+  let jobs = JSON.parse(localStorage.getItem("jobs") || "[]");
+  jobs.push(job);
+  localStorage.setItem("jobs", JSON.stringify(jobs));
+
+  displayJobs();
+}
+
+function displayJobs() {
+  let jobs = JSON.parse(localStorage.getItem("jobs") || "[]");
+  let container = document.getElementById("jobs");
+
+  container.innerHTML = "";
+
+  jobs.forEach((job, index) => {
+    container.innerHTML += `
+      <div class="result">
+        ${job}
+        <button onclick="deleteJob(${index})">Delete</button>
+      </div>
+    `;
+  });
+}
+
+function deleteJob(index) {
+  let jobs = JSON.parse(localStorage.getItem("jobs"));
+  jobs.splice(index, 1);
+  localStorage.setItem("jobs", JSON.stringify(jobs));
+  displayJobs();
+}
+
+displayJobs();
+</script>
+
+</body>
+</html>
